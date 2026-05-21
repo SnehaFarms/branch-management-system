@@ -1,0 +1,21 @@
+name: Deploy Code to InfinityFree Server
+on:
+  push:
+    branches:
+      - main  # గిట్‌హబ్‌లో కోడ్ సేవ్ అవ్వగానే ఇది రన్ అవుతుంది
+
+jobs:
+  web-deploy:
+    name: Syncing Files Live
+    runs-on: ubuntu-latest
+    steps:
+    - name: Get latest code
+      uses: actions/checkout@v3
+
+    - name: Sync files via FTP
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+      with:
+        server: ${{ secrets.FTP_SERVER }}
+        username: ${{ secrets.FTP_USERNAME }}
+        password: ${{ secrets.FTP_PASSWORD }}
+        server-dir: htdocs/  # ఇక్కడి నుండి ఇన్ఫినిటీఫ్రీ htdocs లోకి వెళ్తుంది
