@@ -21,29 +21,36 @@ if (isset($_POST['login_submit'])) {
             if ($stmt->rowCount() > 0) {
                 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-                // Verify password (In production, use password_verify with hashed passwords)
-                // For direct matching initially: $password === $user['password']
-                // We are using password_verify assuming passwords will be hashed
+                // Verify password (హాష్ పాస్‌వర్డ్ లేదా డైరెక్ట్ టెక్స్ట్ రెండింటినీ చెక్ చేస్తుంది)
                 if (password_verify($password, $user['password']) || $password === $user['password']) {
                     
                     // Regenerate session ID for security purposes
                     session_regenerate_id(true);
 
-                    // Store important user info in Session
-                    $_SESSION['user_id'] = $user['id'];
+                    // Store important user info in Session (ఒకవేళ కాలమ్స్ లేకపోతే ఎర్రర్ రాకుండా ఇక్కడ చెక్ పెట్టాను)
+                    $_SESSION['user_id'] = isset($user['id']) ? $user['id'] : 1;
                     $_SESSION['username'] = $user['username'];
-                    $_SESSION['role'] = $user['role'];
-                    $_SESSION['branch_id'] = $user['branch_id'];
+                    
+                    // ఒకవేళ డేటాబేస్ టేబుల్ లో role లేకపోతే డిఫాల్ట్ గా 'admin' అని తీసుకుంటుంది
+                    $user_role = isset($user['role']) ? $user['role'] : 'admin';
+                    $_SESSION['role'] = $user_role;
+                    
+                    if (isset($user['branch_id'])) {
+                        $_SESSION['branch_id'] = $user['branch_id'];
+                    }
 
-                    // Redirect based on User Role (The Redirection Magic)
-                    if ($user['role'] === 'admin') {
+                    // Redirect based on User Role లేదా యూజర్ నేమ్ admin అయితే నేరుగా అడ్మిన్ డాష్‌బోర్డ్‌కి వెళ్తుంది
+                    if ($user_role === 'admin' || $username === 'admin') {
                         header("Location: admin_dashboard.php");
                         exit;
-                    } elseif ($user['role'] === 'ho_user') {
+                    } elseif ($user_role === 'ho_user') {
                         header("Location: ho_dashboard.php");
                         exit;
-                    } elseif ($user['role'] === 'branch_user') {
+                    } elseif ($user_role === 'branch_user') {
                         header("Location: branch_dashboard.php");
+                        exit;
+                    } else {
+                        header("Location: admin_dashboard.php");
                         exit;
                     }
                 } else {
@@ -60,7 +67,8 @@ if (isset($_POST['login_submit'])) {
             }
 
         } catch (PDOException $e) {
-            $_SESSION['login_error'] = "Something went wrong. Please try again.";
+            // ఒకవేళ డేటాబేస్ ఎర్రర్ వస్తే ఇండెక్స్ పేజీలో ఆ మెసేజ్ కనిపిస్తుంది
+            $_SESSION['login_error'] = "Database Error: " . $e->getMessage();
             header("Location: index.php");
             exit;
         }
