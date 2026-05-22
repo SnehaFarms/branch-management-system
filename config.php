@@ -7,7 +7,7 @@ if (session_status() === PHP_SESSION_NONE) {
 $host = "sql211.infinityfree.com";      // ఖచ్చితంగా MySQL Hostname ఇవ్వండి
 $user = "if0_41986998";                  // మీ MySQL Username
 $pass = "Raghu115"; // మీ FTP Password
-$dbname = "if0_41986998_employees_db";   // మీ పూర్తి డేటాబేస్ పేరు
+$dbname = "https://my-poultry-mgmt.rf.gd";   // మీ పూర్తి డేటాబేస్ పేరు
 
 try {
     $conn = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $user, $pass);
